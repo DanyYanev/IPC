@@ -2,6 +2,10 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <stdbool.h>
+#include <unistd.h>
+#include <string.h>
+#include "gen.h"
 #include "dumbShmStruct.h"
 
 int main()
@@ -24,23 +28,20 @@ int main()
 	int prev_seed = verify((void*)(mem->block + i));
 	++i;
 	while(prev_seed == -1){
-		prev_seed = verify((void*)(mem->block + i - 1))
+		prev_seed = verify((void*)(mem->block + i - 1));
 	}
 
-	while(1){
+	for(;;i++, i %= 127){
 		int cur_seed = verify((void*)(mem->block + i));
 
 		if(cur_seed - 1 == prev_seed){
-			printf("Prev: %d Curr: %d Next: %d\n", prev_seed, cur_seed, verify((void*)(mem->gen + i + 1)));
+			printf("Prev: %d Curr: %d Next: %d\n", prev_seed, cur_seed, verify((void*)(mem->block + i + 1)));
 			prev_seed = cur_seed;
-			//printf("Penis\n");
 		}else{
-			printf("Prev: %d Curr: %d Next: %d\n", prev_seed, cur_seed, verify((void*)(mem->gen + i + 1)));
 			usleep(10);
+			printf("Err\n");
 			prev_seed = cur_seed;
 		}
-		++ i;
-		i %= 127;
 	}
 
 	return 0;

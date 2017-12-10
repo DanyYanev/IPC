@@ -1,10 +1,17 @@
+#define _XOPEN_SOURCE 500
+
 #include <stdio.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <stdint.h>
 #include <sys/types.h>
 #include <string.h>
+#include <stdbool.h>
+#include <time.h>
+#include <unistd.h>
+#include "gen.h"
 #include "dumbShmStruct.h"
 
 int main()
@@ -17,7 +24,7 @@ int main()
 	}
 
 	int res;
-	res = ftruncate( memFd, sizeof(struct smart_block));
+	res = ftruncate( memFd, sizeof(struct shared_mem));
 	if( res == -1 )
 	{
 		perror("Can't truncate file");
@@ -35,13 +42,11 @@ int main()
 
 	uint32_t i = 0;
 
-	while(1){
+	for(;;i++, i%=127){
 		generate((void*)(mem->block + i), seed);
 
         seed++;
         printf("Seed: %d\n", seed);
-        ++ i;
-        i %= 127;
 	}
 
 	return 0;
