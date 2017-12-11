@@ -19,17 +19,12 @@ int main(){
 	}
 
 	struct shared_mem* mem = mmap(NULL, sizeof(struct shared_mem), PROT_READ | PROT_WRITE, MAP_SHARED, memFd, 0);
-	if( mem = NULL){
+	if( mem == MAP_FAILED){
 		perror("cant map");
 		return -1;
 	}
 
-	printf("BEFORE, %d\n", mem->index);
-
-	mem->read = 1;
-
-	printf("ANOTHER xd\n");
-	int prev_seed = verify((void*)(mem->block + mem->read));
+	int prev_seed = verify((void*)(mem->block + (mem->read % 512) ));
 	mem->read++;
 
 	while(1){
@@ -37,13 +32,12 @@ int main(){
 		int cur_seed = verify((void*)(mem->block + (mem->read % 512)));
 
 		if(cur_seed - 1 == prev_seed){
-			printf("Prev: %d Curr: %d Next: %ld\n", prev_seed, cur_seed, verify((void*)(mem->block + ((mem->read + 1) % 512) )));
+			printf("Curr: %d - VERIFIED\n", cur_seed);
 			prev_seed = cur_seed;
 			mem->read++;
 		}else{
-			usleep(10);
-			printf("Too fast\n");
-			//prev_seed = cur_seed;
+			printf("Stopped reader to wait at: %d\n", mem->read);
+			usleep(10000);
 		}
 
 

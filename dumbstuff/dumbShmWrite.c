@@ -15,6 +15,8 @@
 #include "gen.h"
 #include "dumbShmStruct.h"
 
+///Currently when the writer is about to surpass the reader it stops writing and waits,  and the oposite
+///Also writer cannot be re executed, reader can
 int main()
 {
 	int memFd = shm_open( "simple_memory", O_CREAT | O_RDWR, S_IRWXO );
@@ -46,15 +48,15 @@ int main()
 	while(1){
 		generate((void*)(mem->block + (mem->index % 512)), seed);
 
-		 if(mem->index - mem->read > 512){
-		 	printf("U going too fast! Im out\n");
-		 	abort();
+		 if(mem->index - mem->read > 512){ /// Doesnt write until reader chatches up
+		 	//usleep(1000);
+			printf("stopped to wait reader at: %d\n", seed);
+			continue;
 		 }
 
 		mem->index++;
         seed++;
         printf("Seed: %d\n", seed);
-		usleep(10000);
 	}
 
 	return 0;
