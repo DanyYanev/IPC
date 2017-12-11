@@ -1,3 +1,5 @@
+#define _XOPEN_SOURCE 500
+
 #include <stdio.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
@@ -8,40 +10,43 @@
 #include "gen.h"
 #include "dumbShmStruct.h"
 
-int main()
-{
-	int memFd = shm_open( "simple_memory", O_RDONLY, 1 );
+int main(){
+	int memFd = shm_open( "simple_memory", O_RDWR, S_IRWXU);
 	if( memFd == -1 )
 	{
 		perror("Can't open file");
 		return 1;
 	}
 
-	struct shared_mem* mem = mmap( NULL, sizeof(struct shared_mem), PROT_READ, MAP_SHARED, memFd, 0 );
-	if( mem == NULL )
-	{
-		perror("Can't mmap");
+	struct shared_mem* mem = mmap(NULL, sizeof(struct shared_mem), PROT_READ | PROT_WRITE, MAP_SHARED, memFd, 0);
+	if( mem = NULL){
+		perror("cant map");
 		return -1;
 	}
 
-	int i = 0;
-	int prev_seed = verify((void*)(mem->block + i));
-	++i;
-	while(prev_seed == -1){
-		prev_seed = verify((void*)(mem->block + i - 1));
-	}
+	printf("BEFORE, %d\n", mem->index);
 
-	for(;;i++, i %= 127){
-		int cur_seed = verify((void*)(mem->block + i));
+	mem->read = 1;
+
+	printf("ANOTHER xd\n");
+	int prev_seed = verify((void*)(mem->block + mem->read));
+	mem->read++;
+
+	while(1){
+
+		int cur_seed = verify((void*)(mem->block + (mem->read % 512)));
 
 		if(cur_seed - 1 == prev_seed){
-			printf("Prev: %d Curr: %d Next: %d\n", prev_seed, cur_seed, verify((void*)(mem->block + i + 1)));
+			printf("Prev: %d Curr: %d Next: %ld\n", prev_seed, cur_seed, verify((void*)(mem->block + ((mem->read + 1) % 512) )));
 			prev_seed = cur_seed;
+			mem->read++;
 		}else{
 			usleep(10);
-			printf("Err\n");
-			prev_seed = cur_seed;
+			printf("Too fast\n");
+			//prev_seed = cur_seed;
 		}
+
+
 	}
 
 	return 0;

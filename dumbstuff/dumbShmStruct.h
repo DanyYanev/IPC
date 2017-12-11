@@ -6,6 +6,8 @@
 
 struct shared_mem
 {
+	volatile uint32_t index;
+	volatile uint32_t read;
 	volatile uint64_t block[512];
 };
 

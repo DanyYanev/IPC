@@ -1,6 +1,7 @@
 #define _XOPEN_SOURCE 500
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -31,22 +32,29 @@ int main()
 		return res;
 	}
 
-	struct shared_mem* mem = mmap( NULL, 4096, PROT_READ | PROT_WRITE, MAP_SHARED, memFd, 0 );
+	struct shared_mem* mem = mmap( NULL, sizeof(struct shared_mem), PROT_READ | PROT_WRITE, MAP_SHARED, memFd, 0 );
 	if( mem == NULL )
 	{
 		perror("Can't mmap");
 		return -1;
 	}
 
+	mem->read = 0;
+	mem->index = 0;
 	uint32_t seed = 1;
 
-	uint32_t i = 0;
+	while(1){
+		generate((void*)(mem->block + (mem->index % 512)), seed);
 
-	for(;;i++, i%=127){
-		generate((void*)(mem->block + i), seed);
+		 if(mem->index - mem->read > 512){
+		 	printf("U going too fast! Im out\n");
+		 	abort();
+		 }
 
+		mem->index++;
         seed++;
         printf("Seed: %d\n", seed);
+		usleep(10000);
 	}
 
 	return 0;
