@@ -6,8 +6,8 @@
 
 struct shared_mem
 {
-	volatile uint32_t index;
-	volatile uint32_t read;
+	volatile int32_t index; //if unsigned it underflows and breaks stuff;
+	volatile int32_t read;
 	volatile uint64_t block[512];
 };
 

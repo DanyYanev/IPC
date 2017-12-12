@@ -24,6 +24,8 @@ int main(){
 		return -1;
 	}
 
+	mem->read = 1;
+
 	int prev_seed = verify((void*)(mem->block + (mem->read % 512) ));
 	mem->read++;
 
@@ -32,15 +34,12 @@ int main(){
 		int cur_seed = verify((void*)(mem->block + (mem->read % 512)));
 
 		if(cur_seed - 1 == prev_seed){
-			printf("Curr: %d - VERIFIED\n", cur_seed);
 			prev_seed = cur_seed;
 			mem->read++;
 		}else{
-			printf("Stopped reader to wait at: %d\n", mem->read);
-			usleep(10000);
+			//printf("Stopped reader to wait at: %d\n", mem->read);
+			//with prints its too slow;
 		}
-
-
 	}
 
 	return 0;
