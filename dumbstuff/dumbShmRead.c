@@ -24,23 +24,32 @@ int main(){
 		return -1;
 	}
 
-	mem->read = 1;
-
-	int prev_seed = verify((void*)(mem->block + (mem->read % 512) ));
-	mem->read++;
+	uint64_t pos = mem->pos;
+	printf("starting at %ld\n", pos);
+	uint64_t curr = verify((void *)mem->block[pos]);
+	uint64_t prev = curr - 1;
 
 	while(1){
-
-		int cur_seed = verify((void*)(mem->block + (mem->read % 512)));
-
-		if(cur_seed - 1 == prev_seed){
-			prev_seed = cur_seed;
-			mem->read++;
-		}else{
-			//printf("Stopped reader to wait at: %d\n", mem->read);
-			//with prints its too slow;
+		if(mem->pos <= pos){
+			sleep(1);
+			continue;
 		}
-	}
+		if(mem->pos - pos > 512){
+			printf("Reader fell behing too much\n");
+			abort();
+		}
+		curr = verify((void *)mem->block[pos % 512]);
+		if (curr == -1){
+			printf("Error");
+			abort();
+		}
+		if(curr - 1 != prev){
+			printf("verify error");
+			abort();
+		}
+		pos++;
+		prev = curr;
+}
 
 	return 0;
 }

@@ -41,32 +41,16 @@ int main()
 		return -1;
 	}
 
-	//giving time to turn on reader;
-	printf("3\n");
-	sleep(1);
-	printf("2\n");
-	sleep(1);
-	printf("1\n");
-	sleep(1);
 
+	int pos = 1;
+	uint32_t seed = pos;
+	mem->pos = pos - 1;
+	while (1){
+		mem->pos++;
+		generate((void *)mem->block[mem->pos % 512], seed);
 
-	//mem->read = 0;
-	mem->index = 0;
-	uint32_t seed = 1;
-
-	while(1){
-		generate((void*)(mem->block + (mem->index % 512)), seed);
-
-		 if(mem->index - mem->read > 512){ /// Breaks if more than one full cycle up
-
-			printf("Reader fell behind\n");
-			abort();
-		 }
-
- 	 	//usleep(100000);
-		mem->index++;
-        seed++;
-        printf("Seed: %d\n", seed);
+		//printf("Seed: %d, at: %ld", seed, mem->pos % 512);
+		seed++;
 	}
 
 	return 0;
